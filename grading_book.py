@@ -126,10 +126,29 @@ class customHash:
         except Exception as e:
             print("Failed to read input file.")
 
+    def readPromptFile(self):
+        """
+        In prompt file tags are mentioned according to that steps will be method will be
+        executed.
+        """
+
+        try:
+            f = open("promptsPS18.txt", "r")
+            if f.mode == 'r':
+                read_file = f.readlines()
+                for record in read_file:
+                    if record.find("hallOfFame") != -1:
+                        self.hallOfFame()
+                    else:
+                        self.newCourseList()
+        except Exception as e:
+            print("Failed to read prompt file.")
+
 
 # customHash Test
 cHash = customHash()
 cHash.getStudentRecords()
+# cHash.readPromptFile()
 # cHash.insert("2010CSE1234", 4.5)
 # # cHash.insert("2000CSE1234", 4.5)
 # cHash.insert("2014MEC1231", 4.5)
