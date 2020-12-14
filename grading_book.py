@@ -42,8 +42,7 @@ class customHash:
         except Exception as e:
             print("Error inserting the given key in the hash table.", key, e)
 
-    @staticmethod
-    def validate_input(key):
+    def _validate_input(self, key):
         """
         Key Validation based on the year and roll number format
         """
@@ -62,7 +61,7 @@ class customHash:
         Includes Input Validation to avoid unnecessary processing.
         """
         try:
-            self.validate_input(key)
+            self._validate_input(key)
             current_index = self.get_hash_key(key)
             if current_index >= HASH_TABLE_SIZE:
                 raise Exception("The entered key has hash generated more than table size", key)
@@ -89,12 +88,11 @@ class customHash:
         do index correction by subtracting from the first record. (10 0 0000)
         """
         year, dept, roll = int(key[:4]), str(key[4:7]), int(key[7:])
-        year_offset = self.get_year_offset(year)
-        department_id = self.get_department_id(dept)
+        year_offset = self._get_year_offset(year)
+        department_id = self._get_department_id(dept)
         return int(str(year_offset) + str(department_id) + str(roll)) - HASHING_STARTER_SEED
 
-    @staticmethod
-    def get_year_offset(year):
+    def _get_year_offset(self, year):
         """
         As the year of study/courses start from 2010,
         we can convert the years into its difference from the starting year (i.e. 2000).
@@ -103,8 +101,7 @@ class customHash:
         """
         return year - STARTING_YEAR
 
-    @staticmethod
-    def get_department_id(dept):
+    def _get_department_id(self, dept):
         """
         We can assign a unique number to each course.
         This function return the index of the current branch from the list of
@@ -123,11 +120,11 @@ class customHash:
                 for record in read_file:
                     split_data = record.split("/")
                     # It will generate the hash key and save the value.
-                    self.validate_input(split_data[0])
+                    self._validate_input(split_data[0])
                     current_index = self.get_hash_key(split_data[0])
                     self.insertStudentRec(current_index, split_data[0], split_data[1])
         except Exception as e:
-            print("Failed to read input file.")
+            print("Failed to read input file.", INPUT_PS)
 
     def readPromptFile(self):
         """
@@ -143,7 +140,7 @@ class customHash:
                     else:
                         self.newCourseList()
         except Exception as e:
-            print("Failed to read prompt file.")
+            print("Failed to read prompt file.", PROMPTS_PS)
 
 
 # customHash Test
