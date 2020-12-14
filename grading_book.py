@@ -17,6 +17,9 @@ HASHING_STARTER_SEED = 1000000
 HASH_TABLE_SIZE = 650000
 STARTING_YEAR = 2000
 STUDENT_ID_LENGTH = 11
+INPUT_PS = "inputPS18.txt"
+PROMPTS_PS = "promptsPS18.txt"
+OUTPUT_PS = "outputPS18.txt"
 
 
 class customHash:
@@ -90,7 +93,8 @@ class customHash:
         department_id = self.get_department_id(dept)
         return int(str(year_offset) + str(department_id) + str(roll)) - HASHING_STARTER_SEED
 
-    def get_year_offset(self, year):
+    @staticmethod
+    def get_year_offset(year):
         """
         As the year of study/courses start from 2010,
         we can convert the years into its difference from the starting year (i.e. 2000).
@@ -110,13 +114,12 @@ class customHash:
 
     def getStudentRecords(self):
         """
-        Read the inputPS18.txt file.
+        Read the INPUT_PS file.
         This function will update the student record from text file to hash table.
         """
         try:
-            f = open("inputPS18.txt", "r")
-            if f.mode == 'r':
-                read_file = f.readlines()
+            with open(INPUT_PS, "r") as input_file:
+                read_file = input_file.read().splitlines()
                 for record in read_file:
                     split_data = record.split("/")
                     # It will generate the hash key and save the value.
@@ -131,11 +134,9 @@ class customHash:
         In prompt file tags are mentioned according to that steps will be method will be
         executed.
         """
-
         try:
-            f = open("promptsPS18.txt", "r")
-            if f.mode == 'r':
-                read_file = f.readlines()
+            with open(PROMPTS_PS, "r") as prompt_file:
+                read_file = prompt_file.read().splitlines()
                 for record in read_file:
                     if record.find("hallOfFame") != -1:
                         self.hallOfFame()
