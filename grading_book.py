@@ -11,6 +11,8 @@ This program has the following components:
   c. Creation of the Department Average CGPA list
 4. There will be a destroy hash function to be executed after the program ends or on exit
 """
+import ast
+import fcntl
 
 DEPT_LIST = ["CSE", "MEC", "ECE", "ARC"]
 HASHING_STARTER_SEED = 1000000
@@ -138,14 +140,69 @@ class customHash:
                     if record.find("hallOfFame") != -1:
                         self.hallOfFame()
                     else:
-                        self.newCourseList()
+                        self.newCourseList(record)
         except Exception as e:
             print("Failed to read prompt file.", PROMPTS_PS)
+
+    def hallOfFame(self):
+        """
+        This function prints the list of all students who have graduated
+        and  topped  their  department  in  their year of graduation
+        """
+        initial_cse_range = 0.0
+        initial_me_range = 0.0
+        initial_ec_range = 0.0
+        initial_ar_range = 0.0
+
+        with open(OUTPUT_PS, "w") as output_file:
+            fcntl.flock(output_file, fcntl.LOCK_EX)
+            output_file.truncate(0)
+            output_file.write("----------hall of fame ----------")
+            output_file.write("\nQualified students:")
+            for student_list in self.values_list:
+                if student_list:
+                    if student_list[0].find(DEPT_LIST[0]) != -1 \
+                            and initial_cse_range < ast.literal_eval(student_list[1]):
+                        initial_cse_range = ast.literal_eval(student_list[1])
+                        cse_fame = student_list[0] + " / " + student_list[1]
+                    elif student_list[0].find(DEPT_LIST[1]) != -1 and initial_me_range < ast.literal_eval(
+                            student_list[1]):
+                        initial_me_range = ast.literal_eval(student_list[1])
+                        me_fame = student_list[0] + " / " + student_list[1]
+                    elif student_list[0].find(DEPT_LIST[2]) != -1 and initial_ec_range < ast.literal_eval(
+                            student_list[1]):
+                        initial_ec_range = ast.literal_eval(student_list[1])
+                        ec_fame = student_list[0] + " / " + student_list[1]
+                    elif student_list[0].find(DEPT_LIST[3]) != -1 and initial_ar_range < ast.literal_eval(
+                            student_list[1]):
+                        initial_ar_range = ast.literal_eval(student_list[1])
+                        ar_fame = student_list[0] + " / " + student_list[1]
+
+            output_file.write("\n" + cse_fame)
+            output_file.write("\n" + me_fame)
+            output_file.write("\n" + ec_fame)
+            output_file.write("\n" + ar_fame)
+            output_file.write("\n------------------------------------------")
+            fcntl.flock(output_file, fcntl.LOCK_UN)
+
+    def newCourseList(self, record):
+        cgpa_range = record.split(":")
+        with open(OUTPUT_PS, "a") as output_file:
+            output_file.write("\n----------new course candidates ----------")
+            output_file.write("\nInput: " + cgpa_range[1] + " to " + cgpa_range[2])
+            output_file.write("\nQualified students:")
+            for student_list in self.values_list:
+                if student_list:
+                    if cgpa_range[1] <= student_list[1] <= cgpa_range[2]:
+                        output_file.write("\n")
+                        output_file.write(student_list[0] + " / " + student_list[1])
+            output_file.write("\n------------------------------------------")
 
 
 # customHash Test
 cHash = customHash()
 cHash.getStudentRecords()
+cHash.readPromptFile()
 # cHash.readPromptFile()
 # cHash.insert("2010CSE1234", 4.5)
 # # cHash.insert("2000CSE1234", 4.5)
