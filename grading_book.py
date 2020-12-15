@@ -22,6 +22,7 @@ STUDENT_ID_LENGTH = 11
 INPUT_PS = "inputPS18.txt"
 PROMPTS_PS = "promptsPS18.txt"
 OUTPUT_PS = "outputPS18.txt"
+SECTION_END_SEPARATOR = "\n------------------------------------------"
 
 
 class customHash:
@@ -30,7 +31,7 @@ class customHash:
     def __init__(self):
         self.values_list = [None] * HASH_TABLE_SIZE
 
-    def insertStudentRec(self, current_index, key, value):
+    def insert_student_record(self, current_index, key, value):
         """
         Inserts the record in the hash table if the provided key is valid.
         """
@@ -42,7 +43,7 @@ class customHash:
                 print("There is a value at the current calculated hash. ", self.values_list[current_index])
             self.values_list[current_index] = (key, value)
         except Exception as e:
-            print("Error inserting the given key in the hash table.", key, e)
+            print("Error inserting the given key in the hash table.", key, " Error: ", e)
 
     def _validate_input(self, key):
         """
@@ -73,7 +74,7 @@ class customHash:
                 return None
 
         except Exception as e:
-            print("Error fetching the entry from the hash table.", key)
+            print("Error fetching the entry from the hash table.", key, " Error: ", e)
 
     def get_hash_key(self, key):
         """
@@ -111,7 +112,7 @@ class customHash:
         """
         return DEPT_LIST.index(dept)
 
-    def getStudentRecords(self):
+    def populate_student_table(self):
         """
         Read the INPUT_PS file.
         This function will update the student record from text file to hash table.
@@ -124,11 +125,11 @@ class customHash:
                     # It will generate the hash key and save the value.
                     self._validate_input(split_data[0])
                     current_index = self.get_hash_key(split_data[0])
-                    self.insertStudentRec(current_index, split_data[0], split_data[1])
+                    self.insert_student_record(current_index, split_data[0], split_data[1])
         except Exception as e:
-            print("Failed to read input file.", INPUT_PS)
+            print("Failed to read input file.", INPUT_PS, " Error: ", e)
 
-    def readPromptFile(self):
+    def read_prompts(self):
         """
         In prompt file tags are mentioned according to that steps will be method will be
         executed.
@@ -138,13 +139,16 @@ class customHash:
                 read_file = prompt_file.read().splitlines()
                 for record in read_file:
                     if record.find("hallOfFame") != -1:
-                        self.hallOfFame()
+                        self.hall_of_fame()
                     else:
-                        self.newCourseList(record)
-        except Exception as e:
-            print("Failed to read prompt file.", PROMPTS_PS)
+                        self.new_course_list(record)
 
-    def hallOfFame(self):
+                # Department max and average to be calculated irrespective of prompt
+                self.department_stats()
+        except Exception as e:
+            print("Failed to read prompt file.", PROMPTS_PS, " Error: ", e)
+
+    def hall_of_fame(self):
         """
         This function prints the list of all students who have graduated
         and  topped  their  department  in  their year of graduation
@@ -182,10 +186,10 @@ class customHash:
             output_file.write("\n" + me_fame)
             output_file.write("\n" + ec_fame)
             output_file.write("\n" + ar_fame)
-            output_file.write("\n------------------------------------------")
+            output_file.write(SECTION_END_SEPARATOR)
             fcntl.flock(output_file, fcntl.LOCK_UN)
 
-    def newCourseList(self, record):
+    def new_course_list(self, record):
         cgpa_range = record.split(":")
         with open(OUTPUT_PS, "a") as output_file:
             output_file.write("\n----------new course candidates ----------")
@@ -196,21 +200,59 @@ class customHash:
                     if cgpa_range[1] <= student_list[1] <= cgpa_range[2]:
                         output_file.write("\n")
                         output_file.write(student_list[0] + " / " + student_list[1])
-            output_file.write("\n------------------------------------------")
+            output_file.write(SECTION_END_SEPARATOR)
+
+    def department_stats(self):
+        """
+        This function evaluates the max and average CGPA for each branch
+        and saves the output to a file.
+        """
+        try:
+            dept_count = len(DEPT_LIST)
+            dept_max = [0] * dept_count
+            dept_avg = [0] * dept_count
+            dept_students = [0] * dept_count
+
+            with open(OUTPUT_PS, "a") as output_file:
+                output_file.write("\n---------- department CGPA ----------")
+                # Create the department max and average arrays
+                for student_record in self.values_list:
+                    if student_record:
+                        cur_dept = student_record[0][4:7]
+                        cur_cgpa = ast.literal_eval(student_record[1])
+                        dept_max[self._get_department_id(cur_dept)] = max(dept_max[self._get_department_id(cur_dept)],
+                                                                          cur_cgpa)
+                        dept_avg[self._get_department_id(cur_dept)] += cur_cgpa
+                        dept_students[self._get_department_id(cur_dept)] += 1
+                for i in range(dept_count):
+                    output_file.write("\n" + DEPT_LIST[i] + ": ")
+                    output_file.write("max: " + str(dept_max[i]) + ", ")
+                    output_file.write("avg: " + str(round(dept_avg[i]/dept_students[i], 1)
+                                                    if dept_students[i] > 0 else 0))
+                output_file.write(SECTION_END_SEPARATOR)
+        except Exception as e:
+            print("Issue in calculating and saving the department statistics: ", e)
+
+    def destroy_hash(self):
+        """
+        This function just empties the list of our records.
+        """
+        self.values_list = []
 
 
 # customHash Test
 cHash = customHash()
-cHash.getStudentRecords()
-cHash.readPromptFile()
-# cHash.readPromptFile()
+cHash.populate_student_table()
+cHash.read_prompts()
+cHash.destroy_hash()
+# cHash.read_prompts()
 # cHash.insert("2010CSE1234", 4.5)
 # # cHash.insert("2000CSE1234", 4.5)
 # cHash.insert("2014MEC1231", 4.5)
 # cHash.insert("2016ARC1234", 4.5)
 # # cHash.insert("20CSE1234", 4.5)
 # # cHash.insert("20a0CSE1234", 4.5)
-print(cHash.get_key("2010CSE1223"))
+# print(cHash.get_key("2010CSE1223"))
 # # print(cHash.get_key("2000CSE1234"))
 # print(cHash.get_key("2014MEC1231"))
 # print(cHash.get_key("2016ARC1234"))
