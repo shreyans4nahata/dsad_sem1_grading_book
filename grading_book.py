@@ -114,19 +114,27 @@ class customHash:
 
     def populate_student_table(self):
         """
-        Read the INPUT_PS file.
-        This function will update the student record from text file to hash table.
+        This function reads the INPUT_PS file and
+        updates the student record from text file to hash table.
         """
         try:
             with open(INPUT_PS, "r") as input_file:
                 read_file = input_file.read().splitlines()
                 for record in read_file:
-                    split_data = record.split("/")
-                    # It will generate the hash key and save the value.
-                    self._validate_input(split_data[0])
-                    current_index = self.get_hash_key(split_data[0])
-                    self.insert_student_record(current_index, split_data[0], split_data[1])
-        except Exception as e:
+                    try:
+                        student_roll, cgpa = record.split("/")
+
+                        # Validate the student input record
+                        self._validate_input(student_roll)
+
+                        # Generate the hash key
+                        current_index = self.get_hash_key(student_roll)
+
+                        # Insert valid record
+                        self.insert_student_record(current_index, student_roll, cgpa)
+                    except Exception as e:
+                        print("Failed to read current line in Input file. Error: ", e)
+        except IOError as e:
             print("Failed to read input file.", INPUT_PS, " Error: ", e)
 
     def read_prompts(self):
