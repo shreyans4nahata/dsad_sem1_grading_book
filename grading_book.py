@@ -190,15 +190,18 @@ class customHash:
 
     def new_course_list(self, record):
         cgpa_range = record.split(":")
+        NEW_COURSE_YEARS = self._get_eligible_years()
+        eligible_students = []
+        for student_record in self.values_list:
+            if student_record and int(student_record[0][:4]) in NEW_COURSE_YEARS and cgpa_range[1] <= student_record[1] <= cgpa_range[2]:
+                eligible_students.append(student_record)
         with open(OUTPUT_PS, "a") as output_file:
             output_file.write("\n---------- new course candidates ----------")
             output_file.write("\nInput: " + cgpa_range[1] + " to " + cgpa_range[2])
+            output_file.write("\nTotal eligible students: " + str(len(eligible_students)))
             output_file.write("\nQualified students:")
-            for student_list in self.values_list:
-                if student_list:
-                    if cgpa_range[1] <= student_list[1] <= cgpa_range[2]:
-                        output_file.write("\n")
-                        output_file.write(student_list[0] + " / " + student_list[1])
+            for i in range(len(eligible_students)):
+                output_file.write("\n" + eligible_students[i][0] + "/" + str(eligible_students[i][1]))
             output_file.write(SECTION_END_SEPARATOR)
 
     def department_stats(self):
@@ -238,6 +241,15 @@ class customHash:
         """
         self.values_list = []
 
+    @staticmethod
+    def _get_eligible_years():
+        """
+        :return: list of years eligible for new course list operation
+        """
+        __l = []
+        for __i in range(CURRENT_YEAR- 5, CURRENT_YEAR - 3):
+            __l.append(__i)
+        return __l
 
 # customHash Test
 cHash = customHash()
