@@ -12,12 +12,11 @@ This program has the following components:
 4. There will be a destroy hash function to be executed after the program ends or on exit
 """
 import ast
-import fcntl
 
 DEPT_LIST = ["CSE", "MEC", "ECE", "ARC"]
-HASHING_STARTER_SEED = 1000000
 HASH_TABLE_SIZE = 650000
-STARTING_YEAR = 2000
+STARTING_YEAR = 2010
+CURRENT_YEAR = 2020
 STUDENT_ID_LENGTH = 11
 INPUT_PS = "inputPS18.txt"
 PROMPTS_PS = "promptsPS18.txt"
@@ -93,7 +92,7 @@ class customHash:
         year, dept, roll = int(key[:4]), str(key[4:7]), int(key[7:])
         year_offset = self._get_year_offset(year)
         department_id = self._get_department_id(dept)
-        return int(str(year_offset) + str(department_id) + str(roll)) - HASHING_STARTER_SEED
+        return int(str(year_offset) + str(department_id) + str(roll))
 
     def _get_year_offset(self, year):
         """
@@ -161,46 +160,38 @@ class customHash:
         This function prints the list of all students who have graduated
         and  topped  their  department  in  their year of graduation
         """
-        initial_cse_range = 0.0
-        initial_me_range = 0.0
-        initial_ec_range = 0.0
-        initial_ar_range = 0.0
-
+        max_cgpa_per_branch = [[[None, 0] for _ in range(len(DEPT_LIST))]
+                               for __ in range(CURRENT_YEAR - STARTING_YEAR - 4)]
         with open(OUTPUT_PS, "w") as output_file:
-            fcntl.flock(output_file, fcntl.LOCK_EX)
             output_file.truncate(0)
-            output_file.write("----------hall of fame ----------")
-            output_file.write("\nQualified students:")
-            for student_list in self.values_list:
-                if student_list:
-                    if student_list[0].find(DEPT_LIST[0]) != -1 \
-                            and initial_cse_range < ast.literal_eval(student_list[1]):
-                        initial_cse_range = ast.literal_eval(student_list[1])
-                        cse_fame = student_list[0] + " / " + student_list[1]
-                    elif student_list[0].find(DEPT_LIST[1]) != -1 and initial_me_range < ast.literal_eval(
-                            student_list[1]):
-                        initial_me_range = ast.literal_eval(student_list[1])
-                        me_fame = student_list[0] + " / " + student_list[1]
-                    elif student_list[0].find(DEPT_LIST[2]) != -1 and initial_ec_range < ast.literal_eval(
-                            student_list[1]):
-                        initial_ec_range = ast.literal_eval(student_list[1])
-                        ec_fame = student_list[0] + " / " + student_list[1]
-                    elif student_list[0].find(DEPT_LIST[3]) != -1 and initial_ar_range < ast.literal_eval(
-                            student_list[1]):
-                        initial_ar_range = ast.literal_eval(student_list[1])
-                        ar_fame = student_list[0] + " / " + student_list[1]
+            output_file.write("---------- hall of fame ----------")
+            for student_record in self.values_list:
+                if student_record:
+                    roll, cgpa = student_record
+                    year, dept = int(roll[:4]), roll[4:7]
+                    cgpa = float(cgpa)
+                    if year <= (CURRENT_YEAR - 4):
+                        if max_cgpa_per_branch[year - STARTING_YEAR - 1][self._get_department_id(dept)][1] < cgpa:
+                            max_cgpa_per_branch[year - STARTING_YEAR - 1][self._get_department_id(dept)][0] = roll
+                            max_cgpa_per_branch[year - STARTING_YEAR - 1][self._get_department_id(dept)][1] = cgpa
+            total_toppers = 0
+            for i in range(CURRENT_YEAR - STARTING_YEAR - 4):
+                for j in range(len(DEPT_LIST)):
+                    total_toppers += 1 if max_cgpa_per_branch[i][j][0] else 0
 
-            output_file.write("\n" + cse_fame)
-            output_file.write("\n" + me_fame)
-            output_file.write("\n" + ec_fame)
-            output_file.write("\n" + ar_fame)
+            output_file.write("\nTotal eligible students: " + str(total_toppers))
+            output_file.write("\nQualified students:")
+            for i in range(CURRENT_YEAR - STARTING_YEAR - 4):
+                for j in range(len(DEPT_LIST)):
+                    if max_cgpa_per_branch[i][j][0]:
+                        output_file.write("\n" + max_cgpa_per_branch[i][j][0] + "/"
+                                          + str(max_cgpa_per_branch[i][j][1]))
             output_file.write(SECTION_END_SEPARATOR)
-            fcntl.flock(output_file, fcntl.LOCK_UN)
 
     def new_course_list(self, record):
         cgpa_range = record.split(":")
         with open(OUTPUT_PS, "a") as output_file:
-            output_file.write("\n----------new course candidates ----------")
+            output_file.write("\n---------- new course candidates ----------")
             output_file.write("\nInput: " + cgpa_range[1] + " to " + cgpa_range[2])
             output_file.write("\nQualified students:")
             for student_list in self.values_list:
