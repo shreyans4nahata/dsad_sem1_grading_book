@@ -1,6 +1,8 @@
 ---------- hall of fame ----------
-Total eligible students: 13
+Total eligible students: 11
 Qualified students:
+2010CSE1226/4.8
+2010MEC1001/4.2
 2012CSE1227/4.1
 2012ECE1301/4.2
 2012ARC1326/4.8
@@ -10,15 +12,13 @@ Qualified students:
 2014ARC1326/4.8
 2015CSE1224/3.9
 2015ARC1225/4.5
-2010CSE1226/4.8
-2010MEC1001/4.2
-2016ECE1301/4.2
-2016ARC1305/4.2
 ------------------------------------------
 ---------- new course candidates ----------
 Input: 3.5 to 4.0
-Total eligible students: 3
+Total eligible students: 5
 Qualified students:
+2012CSE1223/3.5
+2012ECE1224/3.9
 2015CSE1224/3.9
 2016CSE1223/3.5
 2016ECE1224/3.9
